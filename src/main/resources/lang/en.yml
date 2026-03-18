@@ -1,0 +1,35 @@
+time:
+  file: "yyyy-MM-dd"
+  normal: "yyyy-MM-dd"
+  full: "yyyy-MM-dd HH:mm:ss"
+
+play:
+  join: "[time.full]: [player] joined [world] at ([x], [y], [z]) from [ip]."
+  leave: "[time.full]: [player] left [world] at ([x], [y], [z])."
+  kick: "[time.full]: [player] was kicked from [world]. Reason: [reason]"
+  death: "[time.full]: [player] died in [world] at ([x], [y], [z]). Reason: [reason]"
+  teleport: "[time.full]: [player] teleported from [from.world] ([from.x], [from.y], [from.z]) to [to.world] ([to.x], [to.y], [to.z])."
+  gamemode_change: "[time.full]: [player]'s gamemode changed from [previous] to [new] in [world] at ([x], [y], [z]). Cause: [cause]"
+
+item:
+  egg_spawn: "[time.full]: [player] spawned [item] in [world] at ([x], [y], [z])."
+  drop_item: "[time.full]: [player] dropped [item] in [world] at ([x], [y], [z])."
+  pickup_item: "[time.full]: [player] picked up [item] in [world] at ([x], [y], [z])."
+
+bucket:
+  # "player emptied item_stack in world" 형태로 수정
+  empty: "[time.full]: [player] emptied [item_stack] in [world] on the [block_face] face of ([block_clicked.x], [block_clicked.y], [block_clicked.z]) using [hand]."
+  # "player filled item_stack in world" 형태로 수정
+  fill: "[time.full]: [player] filled [item_stack] in [world] by clicking ([block_clicked.x], [block_clicked.y], [block_clicked.z]) using [hand]."
+  # "player captured entity using original_bucket" 형태로 수정
+  entity: "[time.full]: [player] captured [entity] in [world] at ([entity.x], [entity.y], [entity.z]) using [original_bucket], resulting in [entity_bucket] ([hand])."
+
+block:
+  break: "[time.full]: [player] broke [block] in [world] at ([x], [y], [z])."
+  place: "[time.full]: [player] placed [item] - [block] in [world] at ([x], [y], [z])."
+
+chat: "[time.full]: [player]: [message]"
+command: "[time.full]: [player] executed [command] in [world] at ([x], [y], [z])."
+chunk: "[time.full]: loaded chunk [count] in [world]."
+entity: "[time.full]: spawned [count] in [world]."
+player: "[time.full]: stayed [count] in [world]."

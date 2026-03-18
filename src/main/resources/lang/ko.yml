@@ -1,0 +1,32 @@
+time:
+  file: "yyyy-MM-dd"
+  normal: "yyyy-MM-dd"
+  full: "yyyy-MM-dd HH:mm:ss"
+
+play:
+  join: "[time.full]: [player]님이 [world]의 ([x], [y], [z]) 위치에서 [ip] 주소로 접속했습니다."
+  leave: "[time.full]: [player]님이 [world]의 ([x], [y], [z]) 위치에서 퇴장했습니다."
+  kick: "[time.full]: [player]님이 [world]에서 추방되었습니다. 사유: [reason]"
+  death: "[time.full]: [player]님이 [world]의 ([x], [y], [z]) 위치에서 사망했습니다. 사유: [reason]"
+  teleport: "[time.full]: [player]님이 [from.world] ([from.x], [from.y], [from.z])에서 [to.world] ([to.x], [to.y], [to.z])로 텔레포트했습니다."
+  gamemode_change: "[time.full]: [player]님의 게임모드가 [world]의 ([x], [y], [z]) 위치에서 [previous]에서 [new](으)로 변경되었습니다. (원인: [cause])"
+
+item:
+  egg_spawn: "[time.full]: [player]님이 [world]의 ([x], [y], [z]) 위치에서 [item]을(를) 소환했습니다."
+  drop_item: "[time.full]: [player]님이 [world]의 ([x], [y], [z]) 위치에서 [item]을(를) 버렸습니다."
+  pickup_item: "[time.full]: [player]님이 [world]의 ([x], [y], [z]) 위치에서 [item]을(를) 주웠습니다."
+
+bucket:
+  empty: "[time.full]: [player]님이 [world]의 ([block_clicked.x], [block_clicked.y], [block_clicked.z]) 위치 ([block_face] 방향)에 [item_stack]을(를) 비웠습니다. (도구: [hand])"
+  fill: "[time.full]: [player]님이 [world]의 ([block_clicked.x], [block_clicked.y], [block_clicked.z]) 위치 ([block_face] 방향)에서 [item_stack]을(를) 채웠습니다. (도구: [hand])"
+  entity: "[time.full]: [player]님이 [world]의 ([entity.x], [entity.y], [entity.z]) 위치에서 [original_bucket]으로 [entity]을(를) 포획하여 [entity_bucket]을(를) 획득했습니다. (도구: [hand])"
+
+block:
+  break: "[time.full]: [player]님이 [world]의 ([x], [y], [z]) 위치에서 [block]을(를) 파괴했습니다."
+  place: "[time.full]: [player]님이 [world]의 ([x], [y], [z]) 위치에 [item] - [block]을(를) 설치했습니다."
+
+chat: "[time.full]: [player]: [message]"
+command: "[time.full]: [player]님이 [world]의 ([x], [y], [z])에서 [command]를 실행했습니다."
+chunk: "[time.full]: [world]의 로드된 청크 수는 [count] 입니다."
+entity: "[time.full]: [world]의 엔티티 수는 [count] 입니다."
+player: "[time.full]: [world] 플레이어 수는 [count] 입니다."

@@ -1,0 +1,6 @@
+name: ServerLog
+version: '1.0.1'
+main: kr.guinnessgroup.serverLog.ServerLog
+api-version: '1.21.11'
+authors: [ Liminaire ]
+description: A plugin that automatically logs player activities such as block placement, chat, and commands on the server.
