@@ -1,6 +1,5 @@
 package kr.guinnessgroup.serverLog.events;
 
-import kr.guinnessgroup.serverLog.ServerLog;
 import kr.guinnessgroup.serverLog.utils.Message;
 import kr.guinnessgroup.serverLog.utils.ServerLogUtils;
 import org.bukkit.Location;
@@ -8,7 +7,6 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerBucketEntityEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
@@ -17,11 +15,10 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.Objects;
 
-public class BucketListener implements Listener {
-    private final ServerLogUtils logUtils;
+public class BucketListener extends BaseListener {
 
-    public BucketListener(ServerLog serverLog) {
-        this.logUtils = new ServerLogUtils(serverLog);
+    public BucketListener(ServerLogUtils logUtils) {
+        super(logUtils);
     }
 
     @EventHandler
@@ -32,9 +29,8 @@ public class BucketListener implements Listener {
         EquipmentSlot hand = event.getHand();
         ItemStack itemStack = event.getItemStack();
 
-        logUtils.appendString(
-                Message.BUCKET_EMPTY.getPath(),
-                Objects.requireNonNull(logUtils.getConfigFile().getString(Message.BUCKET_EMPTY.getLangKey()))
+        log(Message.BUCKET_EMPTY,
+                template(Message.BUCKET_EMPTY)
                         .replace("[player]", player.getName())
                         .replace("[world]", player.getWorld().getName())
                         .replace("[item_stack]", logUtils.toPlainText(Objects.requireNonNull(itemStack).displayName()))
@@ -58,9 +54,8 @@ public class BucketListener implements Listener {
         ItemStack entityBucket = event.getEntityBucket();
         EquipmentSlot hand = event.getHand();
 
-        logUtils.appendString(
-                Message.BUCKET_ENTITY.getPath(),
-                Objects.requireNonNull(logUtils.getConfigFile().getString(Message.BUCKET_ENTITY.getLangKey()))
+        log(Message.BUCKET_ENTITY,
+                template(Message.BUCKET_ENTITY)
                         .replace("[player]", player.getName())
                         .replace("[world]", player.getWorld().getName())
                         .replace("[entity]", logUtils.toPlainText(entityStack.displayName()))
@@ -80,9 +75,8 @@ public class BucketListener implements Listener {
         Player player = event.getPlayer();
         ItemStack itemStack = event.getItemStack();
 
-        logUtils.appendString(
-                Message.BUCKET_FILL.getPath(),
-                Objects.requireNonNull(logUtils.getConfigFile().getString(Message.BUCKET_FILL.getLangKey()))
+        log(Message.BUCKET_FILL,
+                template(Message.BUCKET_FILL)
                         .replace("[player]", player.getName())
                         .replace("[world]", player.getWorld().getName())
                         .replace("[item_stack]", logUtils.toPlainText(Objects.requireNonNull(itemStack).displayName()))

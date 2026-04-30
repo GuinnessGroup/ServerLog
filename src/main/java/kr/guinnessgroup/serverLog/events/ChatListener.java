@@ -1,28 +1,29 @@
 package kr.guinnessgroup.serverLog.events;
 
 import io.papermc.paper.event.player.AsyncChatEvent;
-import kr.guinnessgroup.serverLog.ServerLog;
 import kr.guinnessgroup.serverLog.utils.Message;
 import kr.guinnessgroup.serverLog.utils.ServerLogUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
+import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.Objects;
+public class ChatListener extends BaseListener {
+    private final JavaPlugin plugin;
 
-public class ChatListener implements Listener {
-    private final ServerLogUtils logUtils;
-
-    public ChatListener(ServerLog serverLog) {
-        this.logUtils = new ServerLogUtils(serverLog);
+    public ChatListener(JavaPlugin plugin, ServerLogUtils logUtils) {
+        super(logUtils);
+        this.plugin = plugin;
     }
 
     @EventHandler
     public void onChat(AsyncChatEvent event) {
-        logUtils.appendString(
-                Message.CHAT.getPath(),
-                Objects.requireNonNull(logUtils.getConfigFile().getString("chat"))
-                        .replace("[player]", event.getPlayer().getName())
-                        .replace("[message]", logUtils.toPlainText(event.message()))
+        String player = event.getPlayer().getName();
+        String message = logUtils.toPlainText(event.message());
+        Bukkit.getScheduler().runTask(plugin, () ->
+                log(Message.CHAT,
+                        template(Message.CHAT)
+                                .replace("[player]", player)
+                                .replace("[message]", message))
         );
     }
 }

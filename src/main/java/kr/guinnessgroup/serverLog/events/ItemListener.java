@@ -1,12 +1,10 @@
 package kr.guinnessgroup.serverLog.events;
 
-import kr.guinnessgroup.serverLog.ServerLog;
 import kr.guinnessgroup.serverLog.utils.Message;
 import kr.guinnessgroup.serverLog.utils.ServerLogUtils;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerAttemptPickupItemEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -14,11 +12,10 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.Objects;
 
-public class ItemListener implements Listener {
-    private final ServerLogUtils logUtils;
+public class ItemListener extends BaseListener {
 
-    public ItemListener(ServerLog serverLog) {
-        this.logUtils = new ServerLogUtils(serverLog);
+    public ItemListener(ServerLogUtils logUtils) {
+        super(logUtils);
     }
 
     @EventHandler
@@ -27,9 +24,8 @@ public class ItemListener implements Listener {
         Item itemDrop = event.getItemDrop();
         ItemStack itemStack = itemDrop.getItemStack();
 
-        logUtils.appendString(
-                Message.ITEM_DROP_ITEM.getPath(),
-                Objects.requireNonNull(logUtils.getConfigFile().getString(Message.ITEM_DROP_ITEM.getLangKey()))
+        log(Message.ITEM_DROP_ITEM,
+                template(Message.ITEM_DROP_ITEM)
                         .replace("[player]", player.getName())
                         .replace("[world]", player.getWorld().getName())
                         .replace("[item]", logUtils.toPlainText(itemStack.displayName()) + "x" + itemStack.getAmount())
@@ -45,9 +41,8 @@ public class ItemListener implements Listener {
         Item item = event.getItem();
         ItemStack itemStack = item.getItemStack();
 
-        logUtils.appendString(
-                Message.ITEM_PICKUP_ITEM.getPath(),
-                Objects.requireNonNull(logUtils.getConfigFile().getString(Message.ITEM_PICKUP_ITEM.getLangKey()))
+        log(Message.ITEM_PICKUP_ITEM,
+                template(Message.ITEM_PICKUP_ITEM)
                         .replace("[player]", player.getName())
                         .replace("[world]", player.getWorld().getName())
                         .replace("[item]", logUtils.toPlainText(itemStack.displayName()) + "x" + itemStack.getAmount())
@@ -63,9 +58,8 @@ public class ItemListener implements Listener {
             if (event.getMaterial().toString().endsWith("_SPAWN_EGG")) {
                 Player player = event.getPlayer();
 
-                logUtils.appendString(
-                        Message.ITEM_EGG_SPAWN.getPath(),
-                        Objects.requireNonNull(logUtils.getConfigFile().getString(Message.ITEM_EGG_SPAWN.getLangKey()))
+                log(Message.ITEM_EGG_SPAWN,
+                        template(Message.ITEM_EGG_SPAWN)
                                 .replace("[player]", player.getName())
                                 .replace("[world]", player.getWorld().getName())
                                 .replace("[item]", logUtils.toPlainText(Objects.requireNonNull(event.getItem()).displayName()))
