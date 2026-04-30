@@ -4,11 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-ServerLog is a **Minecraft Paper plugin** (version 1.21.11) that automatically logs detailed server activities including block placements/breaks, player chat, commands, item interactions, and server metrics. It provides structured, categorized logging with configurable language support.
+ServerLog is a **Minecraft Paper plugin** (version 26.1.2) that automatically logs detailed server activities including block placements/breaks, player chat, commands, item interactions, and server metrics. It provides structured, categorized logging with configurable language support.
 
 **Version:** 1.0.1  
 **Target Java:** 21  
-**Build System:** Gradle
+**Build System:** Gradle  
+**Paper API:** 26.1.2.build.+
 
 ## Build & Run Commands
 
@@ -29,31 +30,41 @@ The built jar file will be in `build/libs/`.
 
 ### Event-Driven Logging System
 
-The plugin registers event listeners to Bukkit's plugin manager, which capture and log specific server activities:
+All event listeners extend `BaseListener` and are injected with a shared `ServerLogUtils` instance. Each listener captures events and writes structured log entries to both timestamped files and (future) database.
 
+- **BaseListener** - abstract base class; holds `logUtils`, provides `log(Message, String)` and `template(Message)` helpers
 - **BlockListener** - logs block placement and destruction events
 - **PlayerListener** - logs player join/leave, death, gamemode changes, and teleportation
-- **ChatListener** - logs chat messages with player names
+- **ChatListener** - logs chat messages (`AsyncChatEvent` delegated to main thread via `runTask`)
 - **CommandListener** - logs command execution with player context and location
 - **ItemListener** - logs item actions (drop, spawn, pickup) with inventory details
-- **BucketListener** - logs bucket interactions (water, lava)
-- **ServerInfoListener** - periodically logs server metrics (loaded chunks, entities, player counts per world)
+- **BucketListener** - logs bucket interactions (water, lava, entity capture)
+- **ServerInfoTask** - periodically logs server metrics (chunks, entities, player counts per world); **not** a Bukkit Listener
 
 ### Logging Infrastructure
 
-**ServerLogUtils** handles all file I/O:
-- Creates timestamped log files in `plugins/ServerLog/logs/` subdirectories
-- Uses format templates from language config files to format log entries
-- Supports dynamic time placeholders: `[time.normal]` and `[time.full]`
-- File names are generated using `time.file` format from language YAML
+**ServerLogUtils** — single shared instance created in `ServerLog.onEnable()`, injected into all listeners:
+- Lang config (`FileConfiguration`) and `SimpleDateFormat` instances cached at construction — **no per-event disk reads**
+- `template(Message)` — returns the lang YAML string for a message key
+- `appendString(String path, String line)` — writes to dated `.txt` files with UTF-8 encoding
+- `toPlainText(Component)` — Adventure → plain string serialization
 
-**Message enum** defines all log message keys and their corresponding file paths, centralizing logging configuration.
+**Message enum** defines all 19 log message keys with their file paths and lang keys:
+
+| Category | Messages |
+|---|---|
+| Player | PLAYER_JOIN, PLAYER_QUIT, PLAYER_KICK, PLAYER_DEATH, PLAYER_TELEPORT, PLAYER_GAMEMODE |
+| Bucket | BUCKET_EMPTY, BUCKET_FILL, BUCKET_ENTITY |
+| Item | ITEM_EGG_SPAWN, ITEM_DROP_ITEM, ITEM_PICKUP_ITEM |
+| Block | BLOCK_BREAK, BLOCK_PLACE |
+| Etc | CHAT, COMMAND, CHUNK_LOAD, ENTITY_COUNT, PLAYER_COUNT |
 
 ### Plugin Initialization (ServerLog.java)
 
 1. Loads default config from `config.yml`
-2. Registers all event listeners
-3. Schedules periodic server info tasks (configurable interval, default 5 minutes = `serverInfo.interval`)
+2. Creates single `ServerLogUtils` instance
+3. Registers all event listeners (injecting shared `logUtils`)
+4. Schedules `ServerInfoTask` via Bukkit sync repeating task (`serverInfo.interval` minutes)
 
 ## Configuration Structure
 
@@ -72,41 +83,47 @@ Language files contain:
 
 ## Key Design Notes
 
-- **No external dependencies** - uses only Paper API (compile-only)
-- **Thread-safe file writes** - uses buffered writers with proper resource management
-- **Language abstraction** - all log messages are externalized to YAML files, allowing easy localization
-- **Multi-world support** - server info listener counts metrics per world
-- **Scheduled tasks** - uses Bukkit scheduler for periodic server info logging (sync repeating tasks)
+- **Single `ServerLogUtils` instance** — created once in `ServerLog`, injected into all listeners; no per-listener instantiation
+- **Lang config cached** — YAML loaded once at startup, not on every event
+- **Thread-safe file writes** — `SimpleDateFormat` fields used only on main thread; `ChatListener` delegates async event to main thread via `runTask` before accessing them
+- **UTF-8 enforced** — `OutputStreamWriter` with `StandardCharsets.UTF_8` (not `FileWriter`)
+- **Language abstraction** — all log messages externalized to YAML for easy localization
+- **Multi-world support** — `ServerInfoTask` counts metrics per world
+- **`ServerInfoTask` is not a Listener** — periodic task called by scheduler, lives in `tasks/` package
 
 ## File Organization
 
 ```txt
 src/main/java/kr/guinnessgroup/serverLog/
 ├── ServerLog.java                    # Main plugin class
-├── events/                           # Event listeners (7 listeners)
+├── events/
+│   ├── BaseListener.java             # Abstract base for all listeners
 │   ├── BlockListener.java
-│   ├── PlayerListener.java
+│   ├── BucketListener.java
 │   ├── ChatListener.java
 │   ├── CommandListener.java
 │   ├── ItemListener.java
-│   ├── BucketListener.java
-│   └── ServerInfoListener.java
+│   └── PlayerListener.java
+├── tasks/
+│   └── ServerInfoTask.java           # Scheduled server metrics collector
 └── utils/
-    ├── ServerLogUtils.java           # File I/O and formatting
-    └── Message.java                  # Log message constants/enum
+    ├── Message.java                  # Log message enum (path + langKey)
+    └── ServerLogUtils.java           # File I/O, lang cache, formatting
 ```
 
 ## Adding New Log Features
 
 When adding a new event type:
-1. Create a new `*Listener.java` class implementing `Listener`
-2. Define `@EventHandler` methods for each event type
-3. Add message keys to `Message.java` enum with paths
-4. Add log message templates to language YAML files (en.yml, ko.yml) with placeholders
-5. Register the listener in `ServerLog.registerEvents()`
+1. Create `XListener.java` extending `BaseListener` with constructor `(ServerLogUtils logUtils)`
+2. Define `@EventHandler` methods using `log(Message.X, template(Message.X).replace(...))` pattern
+3. Add message constants to `Message.java` enum with path and langKey
+4. Add log message templates to `en.yml` and `ko.yml` with placeholders
+5. Register in `ServerLog.registerEvents()` as `new XListener(logUtils)`
 
 ## Notes for Future Development
 
-- Paper API version must match `1.21.11` in both `build.gradle` and `plugin.yml`
-- All file writes should use UTF-8 encoding (already handled in ServerLogUtils)
+- Paper API version is `26.1.2.build.+` in `build.gradle` and `26.1.2` in `plugin.yml`
+- `World.getName()` is noted as future-deprecated in Paper 26.x — prefer `world.key().value()` when it is formally deprecated
+- `PlayerCommandPreprocessEvent` is still valid; avoid `getRecipients()` and `setPlayer()` (deprecated methods)
 - Component serialization uses `PlainTextComponentSerializer` for display names and chat text
+- MariaDB integration is planned — see issue tracker for schema design decisions
