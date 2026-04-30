@@ -80,7 +80,7 @@ Language files contain:
 
 ## File Organization
 
-```
+```txt
 src/main/java/kr/guinnessgroup/serverLog/
 ├── ServerLog.java                    # Main plugin class
 ├── events/                           # Event listeners (7 listeners)
