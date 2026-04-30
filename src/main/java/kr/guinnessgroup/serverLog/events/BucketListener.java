@@ -1,6 +1,6 @@
 package kr.guinnessgroup.serverLog.events;
 
-import kr.guinnessgroup.serverLog.ServerLog;
+import kr.guinnessgroup.serverLog.db.EventRepository;
 import kr.guinnessgroup.serverLog.utils.Message;
 import kr.guinnessgroup.serverLog.utils.ServerLogUtils;
 import org.bukkit.Location;
@@ -8,20 +8,19 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerBucketEntityEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Objects;
 
-public class BucketListener implements Listener {
-    private final ServerLogUtils logUtils;
+public class BucketListener extends BaseListener {
 
-    public BucketListener(ServerLog serverLog) {
-        this.logUtils = new ServerLogUtils(serverLog);
+    public BucketListener(JavaPlugin plugin, ServerLogUtils logUtils, EventRepository repository) {
+        super(plugin, logUtils, repository);
     }
 
     @EventHandler
@@ -31,12 +30,15 @@ public class BucketListener implements Listener {
         Player player = event.getPlayer();
         EquipmentSlot hand = event.getHand();
         ItemStack itemStack = event.getItemStack();
+        String uuid = player.getUniqueId().toString();
+        String name = player.getName();
+        String world = player.getWorld().getName();
+        String material = event.getBucket().toString();
 
-        logUtils.appendString(
-                Message.BUCKET_EMPTY.getPath(),
-                Objects.requireNonNull(logUtils.getConfigFile().getString(Message.BUCKET_EMPTY.getLangKey()))
-                        .replace("[player]", player.getName())
-                        .replace("[world]", player.getWorld().getName())
+        log(Message.BUCKET_EMPTY,
+                template(Message.BUCKET_EMPTY)
+                        .replace("[player]", name)
+                        .replace("[world]", world)
                         .replace("[item_stack]", logUtils.toPlainText(Objects.requireNonNull(itemStack).displayName()))
                         .replace("[hand]", hand.toString())
                         .replace("[block_face]", targetBlockFace.toString())
@@ -47,6 +49,9 @@ public class BucketListener implements Listener {
                         .replace("[player.y]", String.valueOf(player.getY()))
                         .replace("[player.z]", String.valueOf(player.getZ()))
         );
+        Location loc = player.getLocation();
+        logDb("BUCKET_EMPTY", uuid, name, world, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(),
+                "{\"material\":\"" + material + "\"}");
     }
 
     @EventHandler
@@ -57,12 +62,15 @@ public class BucketListener implements Listener {
         ItemStack originalBucket = event.getOriginalBucket();
         ItemStack entityBucket = event.getEntityBucket();
         EquipmentSlot hand = event.getHand();
+        String uuid = player.getUniqueId().toString();
+        String name = player.getName();
+        String world = player.getWorld().getName();
+        String entityType = event.getEntity().getType().toString();
 
-        logUtils.appendString(
-                Message.BUCKET_ENTITY.getPath(),
-                Objects.requireNonNull(logUtils.getConfigFile().getString(Message.BUCKET_ENTITY.getLangKey()))
-                        .replace("[player]", player.getName())
-                        .replace("[world]", player.getWorld().getName())
+        log(Message.BUCKET_ENTITY,
+                template(Message.BUCKET_ENTITY)
+                        .replace("[player]", name)
+                        .replace("[world]", world)
                         .replace("[entity]", logUtils.toPlainText(entityStack.displayName()))
                         .replace("[hand]", hand.toString())
                         .replace("[original_bucket]", logUtils.toPlainText(originalBucket.displayName()))
@@ -71,6 +79,9 @@ public class BucketListener implements Listener {
                         .replace("[entity.y]", String.valueOf(entityLoc.getBlockY()))
                         .replace("[entity.z]", String.valueOf(entityLoc.getBlockZ()))
         );
+        logDb("BUCKET_ENTITY", uuid, name, world,
+                entityLoc.getBlockX(), entityLoc.getBlockY(), entityLoc.getBlockZ(),
+                "{\"entity\":\"" + entityType + "\"}");
     }
 
     @EventHandler
@@ -79,12 +90,15 @@ public class BucketListener implements Listener {
         BlockFace targetBlockFace = event.getBlockFace();
         Player player = event.getPlayer();
         ItemStack itemStack = event.getItemStack();
+        String uuid = player.getUniqueId().toString();
+        String name = player.getName();
+        String world = player.getWorld().getName();
+        String material = event.getBucket().toString();
 
-        logUtils.appendString(
-                Message.BUCKET_FILL.getPath(),
-                Objects.requireNonNull(logUtils.getConfigFile().getString(Message.BUCKET_FILL.getLangKey()))
-                        .replace("[player]", player.getName())
-                        .replace("[world]", player.getWorld().getName())
+        log(Message.BUCKET_FILL,
+                template(Message.BUCKET_FILL)
+                        .replace("[player]", name)
+                        .replace("[world]", world)
                         .replace("[item_stack]", logUtils.toPlainText(Objects.requireNonNull(itemStack).displayName()))
                         .replace("[hand]", event.getHand().toString())
                         .replace("[block_face]", targetBlockFace.toString())
@@ -95,5 +109,8 @@ public class BucketListener implements Listener {
                         .replace("[player.y]", String.valueOf(player.getY()))
                         .replace("[player.z]", String.valueOf(player.getZ()))
         );
+        Location loc = player.getLocation();
+        logDb("BUCKET_FILL", uuid, name, world, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(),
+                "{\"material\":\"" + material + "\"}");
     }
 }

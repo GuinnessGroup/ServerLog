@@ -1,55 +1,63 @@
 package kr.guinnessgroup.serverLog.events;
 
-import kr.guinnessgroup.serverLog.ServerLog;
+import kr.guinnessgroup.serverLog.db.EventRepository;
 import kr.guinnessgroup.serverLog.utils.Message;
 import kr.guinnessgroup.serverLog.utils.ServerLogUtils;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.Objects;
+public class BlockListener extends BaseListener {
 
-public class BlockListener implements Listener {
-    private final ServerLogUtils logUtils;
-
-    public BlockListener(ServerLog serverLog) {
-        this.logUtils = new ServerLogUtils(serverLog);
+    public BlockListener(JavaPlugin plugin, ServerLogUtils logUtils, EventRepository repository) {
+        super(plugin, logUtils, repository);
     }
 
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
         Player player = event.getPlayer();
         Block block = event.getBlock();
+        String uuid = player.getUniqueId().toString();
+        String name = player.getName();
+        String world = player.getWorld().getName();
+        String blockType = block.getType().toString();
 
-        logUtils.appendString(
-                Message.BLOCK_BREAK.getPath(),
-                Objects.requireNonNull(logUtils.getConfigFile().getString(Message.BLOCK_BREAK.getLangKey()))
-                        .replace("[player]", player.getName())
-                        .replace("[world]", player.getWorld().getName())
-                        .replace("[block]", block.getType().toString())
+        log(Message.BLOCK_BREAK,
+                template(Message.BLOCK_BREAK)
+                        .replace("[player]", name)
+                        .replace("[world]", world)
+                        .replace("[block]", blockType)
                         .replace("[x]", String.valueOf(block.getX()))
                         .replace("[y]", String.valueOf(block.getY()))
-                        .replace("[z]", String.valueOf(block.getZ())));
+                        .replace("[z]", String.valueOf(block.getZ()))
+        );
+        logDb("BLOCK_BREAK", uuid, name, world, block.getX(), block.getY(), block.getZ(),
+                "{\"block\":\"" + blockType + "\"}");
     }
 
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent event) {
         Player player = event.getPlayer();
         Block block = event.getBlock();
+        String uuid = player.getUniqueId().toString();
+        String name = player.getName();
+        String world = player.getWorld().getName();
+        String blockType = block.getType().toString();
 
-        logUtils.appendString(
-                Message.BLOCK_PLACE.getPath(),
-                Objects.requireNonNull(logUtils.getConfigFile().getString(Message.BLOCK_PLACE.getLangKey()))
-                        .replace("[player]", player.getName())
-                        .replace("[world]", player.getWorld().getName())
+        log(Message.BLOCK_PLACE,
+                template(Message.BLOCK_PLACE)
+                        .replace("[player]", name)
+                        .replace("[world]", world)
                         .replace("[item]", logUtils.toPlainText(event.getItemInHand().displayName()))
-                        .replace("[block]", block.getType().toString())
+                        .replace("[block]", blockType)
                         .replace("[x]", String.valueOf(block.getX()))
                         .replace("[y]", String.valueOf(block.getY()))
                         .replace("[z]", String.valueOf(block.getZ()))
         );
+        logDb("BLOCK_PLACE", uuid, name, world, block.getX(), block.getY(), block.getZ(),
+                "{\"block\":\"" + blockType + "\"}");
     }
 }
