@@ -1,4 +1,18 @@
 lang: en
+
+output:
+  - file
+  # - database
+
+database:
+  host: localhost
+  port: 3306
+  name: serverlog
+  username: root
+  password: ""
+  table-prefix: sl_
+  pool-size: 5
+
 serverInfo:
   # 분 단위
   interval: 5

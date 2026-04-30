@@ -47,7 +47,16 @@ public class ServerLogUtils {
         return value;
     }
 
+    public boolean isFileEnabled() {
+        return serverLog.getConfig().getStringList("output").contains("file");
+    }
+
+    public boolean isDatabaseEnabled() {
+        return serverLog.getConfig().getStringList("output").contains("database");
+    }
+
     public void appendString(String path, String configString) {
+        if (!isFileEnabled()) return;
         Date now = new Date();
 
         File folder = new File(serverLog.getDataFolder() + path);
