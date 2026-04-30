@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ServerLog is a **Minecraft Paper plugin** (version 26.1.2) that automatically logs detailed server activities including block placements/breaks, player chat, commands, item interactions, and server metrics. It provides structured, categorized logging with configurable language support.
 
 **Version:** 1.0.1  
-**Target Java:** 21  
+**Target Java:** 25  
 **Build System:** Gradle  
 **Paper API:** 26.1.2.build.+
 
